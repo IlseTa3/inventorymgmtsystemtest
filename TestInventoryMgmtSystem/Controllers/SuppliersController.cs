@@ -57,18 +57,14 @@ namespace TestInventoryMgmtSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors);
-                foreach (var error in errors)
-                {
-                    Console.WriteLine(error.ErrorMessage); // Of gebruik een logger om de foutberichten te loggen
-                }
-                return View(supplier);
+                _context.Add(supplier);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+                //return View(supplier);
                 
             }
-            _context.Add(supplier);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-            //return View(supplier);
+            
+            return View(supplier);
         }
 
         // GET: Suppliers/Edit/5
@@ -103,6 +99,7 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 try
                 {
+
                     _context.Update(supplier);
                     await _context.SaveChangesAsync();
                 }

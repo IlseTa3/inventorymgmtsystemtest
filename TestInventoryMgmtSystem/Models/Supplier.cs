@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace TestInventoryMgmtSystem.Models
 {
@@ -15,6 +16,8 @@ namespace TestInventoryMgmtSystem.Models
         public string Email { get; set; }
 
         //1 supplier has many products
+
+        [ValidateNever]
         public virtual ICollection<Product> Products { get; set; }
     }
 }
