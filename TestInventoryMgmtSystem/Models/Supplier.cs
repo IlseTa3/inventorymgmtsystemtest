@@ -20,7 +20,7 @@ namespace TestInventoryMgmtSystem.Models
 
         //1 supplier has many products
 
-        [ValidateNever]
+        
         public virtual ICollection<Product> Products { get; set; }
     }
 }
