@@ -10,6 +10,9 @@ namespace TestInventoryMgmtSystem.Models
         [Display(Name = "Name Supplier")]
         public string NameSupplier { get; set; }
         public string Address { get; set; }
+
+        [Display(Name = "Postalcode")]
+
         public string PostalCode { get; set; }
         public string Municipality { get; set; }
         public string Country { get; set; }
@@ -20,7 +23,7 @@ namespace TestInventoryMgmtSystem.Models
 
         //1 supplier has many products
 
-        
+        [ValidateNever]
         public virtual ICollection<Product> Products { get; set; }
     }
 }

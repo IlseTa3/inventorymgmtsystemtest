@@ -6,11 +6,14 @@ namespace TestInventoryMgmtSystem.Models
     public class LocationStock
     {
         public int Id { get; set; }
+
         [Display(Name = "Name Location")]
         public string NameLocation { get; set; }
 
         [Display(Name = "Location Adress")]
         public string LocationAddress { get; set; }
+
+        [Display(Name = "Postalcode")]
         public string PostalCode { get; set; }
 
         public string Municipality { get; set; }

@@ -84,8 +84,8 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["LocationStockId"] = new SelectList(_context.LocationStocks, "Id", "Id", productLocationStock.LocationStockId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id", productLocationStock.ProductId);
+            ViewData["LocationStockId"] = new SelectList(_context.LocationStocks, "Id", "NameLocation", productLocationStock.LocationStockId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "ProductNr", productLocationStock.ProductId);
             return View(productLocationStock);
         }
 
@@ -121,8 +121,8 @@ namespace TestInventoryMgmtSystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["LocationStockId"] = new SelectList(_context.LocationStocks, "Id", "Id", productLocationStock.LocationStockId);
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Id", productLocationStock.ProductId);
+            ViewData["LocationStockId"] = new SelectList(_context.LocationStocks, "Id", "NameLocation", productLocationStock.LocationStockId);
+            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "ProductNr", productLocationStock.ProductId);
             return View(productLocationStock);
         }
 
