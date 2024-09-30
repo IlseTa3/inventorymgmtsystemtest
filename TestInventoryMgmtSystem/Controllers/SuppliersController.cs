@@ -24,23 +24,7 @@ namespace TestInventoryMgmtSystem.Controllers
             return View(await _context.Suppliers.ToListAsync());
         }
 
-        // GET: Suppliers/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var supplier = await _context.Suppliers
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supplier == null)
-            {
-                return NotFound();
-            }
-
-            return View(supplier);
-        }
+        
 
         // GET: Suppliers/Create
         public IActionResult Create()

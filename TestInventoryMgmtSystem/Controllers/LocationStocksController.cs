@@ -24,23 +24,7 @@ namespace TestInventoryMgmtSystem.Controllers
             return View(await _context.LocationStocks.ToListAsync());
         }
 
-        // GET: LocationStocks/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var locationStock = await _context.LocationStocks
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (locationStock == null)
-            {
-                return NotFound();
-            }
-
-            return View(locationStock);
-        }
+        
 
         // GET: LocationStocks/Create
         public IActionResult Create()

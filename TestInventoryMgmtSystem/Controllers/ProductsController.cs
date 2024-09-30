@@ -32,24 +32,7 @@ namespace TestInventoryMgmtSystem.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var product = await _context.Products
-                .Include(p => p.Supplier)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return View(product);
-        }
+        
 
         // GET: Products/Create
         public IActionResult Create()

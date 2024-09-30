@@ -10,7 +10,7 @@ namespace TestInventoryMgmtSystem.Models
         [Display(Name = "Name Location")]
         public string NameLocation { get; set; }
 
-        [Display(Name = "Location Adress")]
+        [Display(Name = "Location Address")]
         public string LocationAddress { get; set; }
 
         [Display(Name = "Postalcode")]
