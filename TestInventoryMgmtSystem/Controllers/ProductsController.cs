@@ -30,13 +30,17 @@ namespace TestInventoryMgmtSystem.Controllers
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Products.Include(p => p.Supplier);
-            return View(await applicationDbContext.ToListAsync());
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(await _context.Products.ToListAsync());
+            }
+            return Forbid();
         }
 
-        
+
 
         // GET: Products/Create
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public IActionResult Create()
         {
             ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier");
@@ -46,8 +50,9 @@ namespace TestInventoryMgmtSystem.Controllers
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost]  
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Create([Bind("Id,NameProduct,ProductNr,Price,SupplierId")] Product product)
         {
             if (ModelState.IsValid)
@@ -84,8 +89,15 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
-            return View(product);
+            
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
+                return View(product);
+            }
+            return Forbid();
+            
+            //return View(product);
         }
 
         // POST: Products/Edit/5
@@ -104,8 +116,13 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 try
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
+                    if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+                    {
+                        _context.Update(product);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return Forbid();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -118,13 +135,15 @@ namespace TestInventoryMgmtSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                //return RedirectToAction(nameof(Index));
             }
+
             ViewData["SupplierId"] = new SelectList(_context.Suppliers, "Id", "NameSupplier", product.SupplierId);
             return View(product);
         }
 
         // GET: Products/Delete/5
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -146,6 +165,7 @@ namespace TestInventoryMgmtSystem.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _context.Products.FindAsync(id);

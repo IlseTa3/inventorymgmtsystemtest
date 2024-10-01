@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,31 +15,38 @@ namespace TestInventoryMgmtSystem.Controllers
     public class SuppliersController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public SuppliersController(ApplicationDbContext context)
+        public SuppliersController(ApplicationDbContext context, UserManager<IdentityUser> usermanager)
         {
             _context = context;
+            _userManager = usermanager;
         }
 
         // GET: Suppliers
+        
         public async Task<IActionResult> Index()
+
         {
-            return View(await _context.Suppliers.ToListAsync());
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(await _context.Suppliers.ToListAsync());
+            }
+            return Forbid();
+            
         }
 
-        
-
         // GET: Suppliers/Create
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Suppliers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Create([Bind("Id,NameSupplier,Address,PostalCode,Municipality,Country,VatNr,PhoneNr,Email")] Supplier supplier)
         {
             if (ModelState.IsValid)
@@ -46,14 +54,12 @@ namespace TestInventoryMgmtSystem.Controllers
                 _context.Add(supplier);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
-                //return View(supplier);
-                
             }
-            
             return View(supplier);
         }
 
         // GET: Suppliers/Edit/5
+        //[Authorize(Policy = "StockemployeeReadUpdate")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -66,14 +72,19 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
-            return View(supplier);
+
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(supplier);
+            }
+            return Forbid();
+            //return View(supplier);
         }
 
         // POST: Suppliers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        //[Authorize(Policy = "StockemployeeReadUpdate")]
         public async Task<IActionResult> Edit(int id, [Bind("Id,NameSupplier,Address,PostalCode,Municipality,Country,VatNr,PhoneNr,Email")] Supplier supplier)
         {
             if (id != supplier.Id)
@@ -85,9 +96,13 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 try
                 {
-
-                    _context.Update(supplier);
-                    await _context.SaveChangesAsync();
+                    if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+                    {
+                        _context.Update(supplier);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return Forbid();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -100,12 +115,13 @@ namespace TestInventoryMgmtSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                //return RedirectToAction(nameof(Index));
             }
             return View(supplier);
         }
 
         // GET: Suppliers/Delete/5
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -126,6 +142,7 @@ namespace TestInventoryMgmtSystem.Controllers
         // POST: Suppliers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var supplier = await _context.Suppliers.FindAsync(id);
@@ -143,4 +160,5 @@ namespace TestInventoryMgmtSystem.Controllers
             return _context.Suppliers.Any(e => e.Id == id);
         }
     }
+
 }

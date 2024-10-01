@@ -23,12 +23,18 @@ namespace TestInventoryMgmtSystem.Controllers
         // GET: LocationStocks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.LocationStocks.ToListAsync());
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(await _context.LocationStocks.ToListAsync());
+            }
+            return Forbid();
+            
         }
 
-        
+
 
         // GET: LocationStocks/Create
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public IActionResult Create()
         {
             return View();
@@ -39,6 +45,7 @@ namespace TestInventoryMgmtSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Create([Bind("Id,NameLocation,LocationAddress,PostalCode,Municipality,Country")] LocationStock locationStock)
         {
             if (ModelState.IsValid)
@@ -63,7 +70,12 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
-            return View(locationStock);
+            if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+            {
+                return View(locationStock);
+            }
+            return Forbid();
+            //return View(locationStock);
         }
 
         // POST: LocationStocks/Edit/5
@@ -82,8 +94,13 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 try
                 {
-                    _context.Update(locationStock);
-                    await _context.SaveChangesAsync();
+                    if (User.IsInRole("Stockemployee") || User.IsInRole("Stockmanager") || User.IsInRole("Administrator"))
+                    {
+                        _context.Update(locationStock);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return Forbid();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -96,12 +113,13 @@ namespace TestInventoryMgmtSystem.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                //return RedirectToAction(nameof(Index));
             }
             return View(locationStock);
         }
 
         // GET: LocationStocks/Delete/5
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -122,6 +140,7 @@ namespace TestInventoryMgmtSystem.Controllers
         // POST: LocationStocks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Policy = "StockmanagerOrAdmin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var locationStock = await _context.LocationStocks.FindAsync(id);
