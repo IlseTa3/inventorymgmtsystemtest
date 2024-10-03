@@ -159,6 +159,20 @@ namespace TestInventoryMgmtSystem.Controllers
         {
             return _context.Suppliers.Any(e => e.Id == id);
         }
+
+        public IActionResult LoadAllSuppliers()
+        {
+            try
+            {
+                var supplierData = (from s in _context.Suppliers select s).ToList<Supplier>();
+                return Json(new {data = supplierData});
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 
 }
