@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using TestInventoryMgmtSystem.ViewModels.Registrations;
 
 namespace TestInventoryMgmtSystem.Controllers
 {
+    [Authorize(Policy = "RequireAdministratorRole")]
     public class AdminController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -50,18 +52,33 @@ namespace TestInventoryMgmtSystem.Controllers
         //Create POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("FirstName,LastName,Email,CellphoneNr,Role")] IndexViewModel vm)
+        public async Task<IActionResult> Create([Bind("Id,FirstName,LastName,Email,CellphoneNr,Role")] IndexViewModel vm)
         {
 
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { Firstname = vm.FirstName,Lastname=vm.LastName, Email = vm.Email,CellPhoneNr=vm.CellphoneNr, EmailConfirmed = true };
+                var user = new ApplicationUser
+                {
+                    UserName = vm.Email, // Voeg deze regel toe
+                    Firstname = vm.FirstName,
+                    Lastname = vm.LastName,
+                    Email = vm.Email,
+                    CellPhoneNr = vm.CellphoneNr,
+                    EmailConfirmed = true
+                };
+
                 var result = await _userManager.CreateAsync(user, "RetroConst123!");
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, vm.Role);
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                //return RedirectToAction(nameof(Index));
             }
 
             ViewData["Roles"] = new SelectList(_context.Roles, "Name", "Name");
