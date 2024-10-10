@@ -86,8 +86,7 @@ namespace TestInventoryMgmtSystem.Controllers
         }
 
 
-        //GET Edit
-
+        // GET Edit
         public async Task<IActionResult> Edit(string id)
         {
             if (id == null || _userManager.Users == null)
@@ -100,21 +99,28 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
+
+            // Haal alle beschikbare rollen op voor de dropdown
             ViewData["Roles"] = new SelectList(_context.Roles, "Name", "Name");
+
+            // Probeer de gebruikersrol op te halen, maar controleer of er een rol is
             var userRole = await _context.UserRoles.FirstOrDefaultAsync(ur => ur.UserId == id);
-            var role = await _context.Roles.FindAsync(userRole.RoleId);
+            string roleName = userRole != null ?
+                              (await _context.Roles.FindAsync(userRole.RoleId))?.Name :
+                              "Geen rol";  // Gebruik "Geen rol" als de gebruiker geen rol heeft
+
             return View(new IndexViewModel
             {
                 FirstName = registratie.Firstname,
                 LastName = registratie.Lastname,
                 Email = registratie.Email,
                 CellphoneNr = registratie.CellPhoneNr,
-                Role = role.Name
+                Role = roleName
             });
         }
 
-        //POST Edit
-        //Edit POST
+
+        // POST Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, [Bind("Id,FirstName,LastName,Email,CellphoneNr,Role")] IndexViewModel vm)
@@ -123,22 +129,43 @@ namespace TestInventoryMgmtSystem.Controllers
             {
                 return NotFound();
             }
+
             if (ModelState.IsValid)
             {
-
                 var user = await _userManager.FindByIdAsync(vm.Id);
+
+                // Update de gebruikersinformatie
                 user.Firstname = vm.FirstName;
                 user.Lastname = vm.LastName;
                 user.Email = vm.Email;
                 user.CellPhoneNr = vm.CellphoneNr;
-                var rolUpdate = vm.Role;
-                var rol = await _userManager.AddToRoleAsync(user, rolUpdate);
 
-                _context.SaveChanges();
-                return RedirectToAction(nameof(Index));
+                // Haal de bestaande rol van de gebruiker op
+                var currentRoles = await _userManager.GetRolesAsync(user);
+
+                // Verwijder de bestaande rollen (als er een rol is)
+                if (currentRoles.Count > 0)
+                {
+                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                }
+
+                // Voeg de nieuwe rol toe
+                var rolUpdate = vm.Role;
+                var roleResult = await _userManager.AddToRoleAsync(user, rolUpdate);
+
+                if (roleResult.Succeeded)
+                {
+                    // Sla de wijzigingen in de database op
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
             }
+
+            // Als het model niet geldig is, keer terug naar de view met de foutmeldingen
+            ViewData["Roles"] = new SelectList(_context.Roles, "Name", "Name");
             return View(vm);
         }
+
 
         //Loading Registrations for Ajax-call
         public IActionResult LoadAllRegistrations()
@@ -146,17 +173,20 @@ namespace TestInventoryMgmtSystem.Controllers
             try
             {
                 var registrationData = (from u in _userManager.Users
-                                join ur in _context.UserRoles on u.Id equals ur.UserId
-                                join r in _context.Roles on ur.RoleId equals r.Id
-                                select new IndexViewModel
-                                {
-                                    Id = u.Id,
-                                    FirstName = u.Firstname,
-                                    LastName = u.Lastname,
-                                    Email = u.Email,
-                                    CellphoneNr = u.CellPhoneNr,
-                                    Role = r.Name
-                                }).ToList<IndexViewModel>();
+                                        join ur in _context.UserRoles on u.Id equals ur.UserId into userRoles
+                                        from ur in userRoles.DefaultIfEmpty()
+                                        join r in _context.Roles on ur.RoleId equals r.Id into roles
+                                        from r in roles.DefaultIfEmpty()
+                                        select new IndexViewModel
+                                        {
+                                            Id = u.Id,
+                                            FirstName = u.Firstname,
+                                            LastName = u.Lastname,
+                                            Email = u.Email,
+                                            CellphoneNr = u.CellPhoneNr,
+                                            Role = r != null ? r.Name : "Role to be specified"  // Toon "Geen rol" voor gebruikers zonder een rol
+                                        }).ToList<IndexViewModel>();
+
                 return Json(new { data = registrationData });
             }
             catch (Exception)
