@@ -1,0 +1,142 @@
+﻿@model IEnumerable<TestInventoryMgmtSystem.Models.Supplier>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+    #custtable tbody tr {
+        cursor: pointer;
+        color : crimson;
+        font-weight:bold;
+    }
+    #custtable thead tr{
+        font-size:larger;
+        color:mediumaquamarine;
+    }
+
+    #custtable tbody tr td:nth-child(2) {
+        color: darkmagenta;
+        font-weight: bold;
+    }
+</style>
+
+<h1>Index Suppliers</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table id="custtable" class="display cell-border compact">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Id)</th>
+            <th>
+                @Html.DisplayNameFor(model => model.NameSupplier)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PostalCode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Municipality)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Country)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.VatNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhoneNr)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <!--T-body element -->
+    </tbody>
+</table>
+    @* 
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.NameSupplier)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PostalCode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Municipality)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Country)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VatNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhoneNr)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+     *@
+
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.11/css/jquery.dataTables.css" />
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.11/js/jquery.dataTables.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#custtable').DataTable({
+                "ajax": {
+                    "url": "/Suppliers/LoadAllSuppliers",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "id" },
+                    { "data": "nameSupplier" },
+                    { "data": "address" },
+                    { "data": "postalCode" },
+                    { "data": "municipality" },
+                    { "data": "country" },
+                    { "data": "vatNr" },
+                    { "data": "phoneNr" },
+                    { "data": "email" },
+                    { "data": null, "defaultContent": "<a href='' class='del'>Delete</a>" }
+                ]
+            });
+
+            $('#custtable tbody').on('click', 'tr', function (e) {
+                e.preventDefault();
+                var id = $("td:first", this).text();
+                if ($(e.target).is("a.del")) {
+                    $.get('@Url.Action("Delete", "Suppliers")', { id: id }, function (data) {
+                        $("body").html(data);
+                    });
+                    return;
+                }
+                $.get('@Url.Action("Edit", "Suppliers")', { id: id }, function (data) {
+                    $("body").html(data);
+                });
+            });
+        });
+    </script>
+}
