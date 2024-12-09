@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TestInventoryMgmtSystem.Models;
 using TestInventoryMgmtSystem.ViewModels.Registrations;
+using TestInventoryMgmtSystem.ViewModels.ProductLocationStock;
 
 
 namespace TestInventoryMgmtSystem.Models
@@ -21,5 +22,6 @@ namespace TestInventoryMgmtSystem.Models
         //public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ProductLocationStock> ProductLocationsStocks { get; set; }
         public DbSet<TestInventoryMgmtSystem.ViewModels.Registrations.IndexViewModel> IndexViewModel { get; set; } = default!;
+        public DbSet<TestInventoryMgmtSystem.ViewModels.ProductLocationStock.IndexViewModel> IndexViewModel_1 { get; set; } = default!;
     }
 }

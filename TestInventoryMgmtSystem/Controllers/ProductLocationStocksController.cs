@@ -199,5 +199,28 @@ namespace TestInventoryMgmtSystem.Controllers
                 throw;
             }
         }
+
+        public IActionResult GetStockData(string location, string product)
+        {
+            try
+            {
+                var stockData = _context.ProductLocationsStocks
+                    .Where(s => (string.IsNullOrEmpty(location) || s.LocationStock.NameLocation.Contains(location)) &&
+                                (string.IsNullOrEmpty(product) || s.Product.ProductNr.Contains(product)))
+                    .Select(pls => new IndexViewModel
+                    {
+                        Id = pls.Id,
+                        ProductNr = pls.Product.ProductNr,
+                        LocationName = pls.LocationStock.NameLocation,
+                        TotalInStock = pls.TotalInStock
+                    }).ToList();
+
+                return Json(new { data = stockData });
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }
